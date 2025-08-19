@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng Hợp Công Cụ AI Đa Năng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: white;
+            background: linear-gradient(90deg, #4a90e2, #50c9c3);
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            transition: background-color 0.3s, color 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-button.active {
+            background-color: #4a90e2;
+            color: white;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);
+        }
+
+        .tab-button:hover:not(.active) {
+            background-color: #d0d0d0;
+        }
+
+        .website-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .website-item {
+            display: flex;
+            align-items: center;
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 5px;
+            margin-bottom: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .website-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .website-logo {
+            width: 32px;
+            height: 32px;
+            margin-right: 15px;
+            border-radius: 50%;
+            object-fit: contain;
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+
+        .website-content {
+            flex-grow: 1;
+        }
+
+        .website-content h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .website-content a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .website-content p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>TỔNG HỢP CÁC CÔNG CỤ AI ĐA NĂNG 2025</h1>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button" data-tab="video">Tạo Video AI</button>
+        <button class="tab-button" data-tab="image">Tạo Ảnh AI</button>
+        <button class="tab-button" data-tab="tts">Văn bản - Giọng nói</button>
+        <button class="tab-button" data-tab="new1">NEW</button>
+        <button class="tab-button" data-tab="new2">NEW</button>
+        <button class="tab-button" data-tab="new3">NEW</button>
+    </div>
+
+    <ul id="website-list" class="website-list">
+        </ul>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dữ liệu mẫu (bạn có thể thay đổi dữ liệu này)
+        const websitesData = {
+            "tts": [
+                {
+                    name: "fpt.ai",
+                    url: "https://fpt.ai",
+                    description: "Giọng Nói AI Là Gì? Cách Tạo Giọng Nói Bằng AI Miễn Phí - FPT AI",
+                    logo: "https://i.imgur.com/L795B4S.png" // Thay thế bằng URL logo thật
+                },
+                {
+                    name: "tts.maker.com",
+                    url: "https://ttsmaker.com",
+                    description: "TTSMaker: Free Text to Speech Online",
+                    logo: "https://i.imgur.com/s6nU9gA.png" // Thay thế bằng URL logo thật
+                },
+                {
+                    name: "vbee.vn",
+                    url: "https://vbee.vn",
+                    description: "Vbee AIVoice: Text to Speech AI Voice Platform",
+                    logo: "https://i.imgur.com/pYp05Lp.png" // Thay thế bằng URL logo thật
+                },
+                {
+                    name: "vietnix.vn",
+                    url: "https://vietnix.vn",
+                    description: "TOP 22 phần mềm chuyển văn bản thành giọng nói AI miễn phí",
+                    logo: "https://i.imgur.com/71G1YgW.png" // Thay thế bằng URL logo thật
+                },
+                {
+                    name: "luvvvoice.com",
+                    url: "https://luvvvoice.com",
+                    description: "Chuyển văn bản thành giọng nói trực tuyến miễn phí ... - Luvvoice",
+                    logo: "https://i.imgur.com/dJ4vj2g.png" // Thay thế bằng URL logo thật
+                },
+                {
+                    name: "murf.ai",
+                    url: "https://murf.ai",
+                    description: "Top 10 Free Text to Speech Software & Apps for 2025 - Murf AI",
+                    logo: "https://i.imgur.com/f25jT30.png" // Thay thế bằng URL logo thật
+                },
+                {
+                    name: "thegioididong.com",
+                    url: "https://thegioididong.com",
+                    description: "TOP 8 trang web chuyển văn bản thành giọng nói online tốt nhất - Thegioididong.com",
+                    logo: "https://i.imgur.com/0uB3H9n.png" // Thay thế bằng URL logo thật
+                }
+            ],
+            "video": [
+                {
+                    name: "Synthesia",
+                    url: "https://www.synthesia.io/",
+                    description: "Nền tảng tạo video AI từ văn bản",
+                    logo: "https://i.imgur.com/vHqB3qS.png"
+                },
+                {
+                    name: "HeyGen",
+                    url: "https://www.heygen.com/",
+                    description: "Tạo video AI nhanh chóng với avatar",
+                    logo: "https://i.imgur.com/d8p1f7B.png"
+                }
+            ],
+            "image": [
+                {
+                    name: "Midjourney",
+                    url: "https://www.midjourney.com/",
+                    description: "Tạo ảnh AI chuyên nghiệp",
+                    logo: "https://i.imgur.com/K1LgGz3.png"
+                },
+                {
+                    name: "DALL-E 2",
+                    url: "https://openai.com/dall-e-2/",
+                    description: "Tạo ảnh chân thực và nghệ thuật từ mô tả",
+                    logo: "https://i.imgur.com/L795B4S.png"
+                }
+            ],
+            "new1": [
+                {
+                    name: "Công cụ mới 1",
+                    url: "#",
+                    description: "Mô tả cho công cụ mới 1",
+                    logo: ""
+                }
+            ],
+            "new2": [
+                {
+                    name: "Công cụ mới 2",
+                    url: "#",
+                    description: "Mô tả cho công cụ mới 2",
+                    logo: ""
+                }
+            ],
+            "new3": [
+                {
+                    name: "Công cụ mới 3",
+                    url: "#",
+                    description: "Mô tả cho công cụ mới 3",
+                    logo: ""
+                }
+            ]
+        };
+
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const websiteList = document.getElementById('website-list');
+
+        function renderWebsites(tabName) {
+            websiteList.innerHTML = ''; // Xóa danh sách cũ
+            const currentWebsites = websitesData[tabName] || [];
+
+            if (currentWebsites.length === 0) {
+                const noData = document.createElement('p');
+                noData.textContent = "Chưa có dữ liệu cho danh mục này.";
+                websiteList.appendChild(noData);
+                return;
+            }
+
+            currentWebsites.forEach(website => {
+                const li = document.createElement('li');
+                li.className = 'website-item';
+
+                const a = document.createElement('a');
+                a.href = website.url;
+                a.target = "_blank"; // Mở trong tab mới
+                a.style.display = 'flex';
+                a.style.alignItems = 'center';
+                a.style.textDecoration = 'none';
+
+                const logo = document.createElement('img');
+                logo.className = 'website-logo';
+                logo.src = website.logo;
+                logo.alt = website.name + " logo";
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'website-content';
+
+                const nameHeading = document.createElement('h3');
+                nameHeading.textContent = website.name;
+
+                const descriptionParagraph = document.createElement('p');
+                descriptionParagraph.textContent = website.description;
+
+                contentDiv.appendChild(nameHeading);
+                contentDiv.appendChild(descriptionParagraph);
+
+                a.appendChild(logo);
+                a.appendChild(contentDiv);
+
+                li.appendChild(a);
+                websiteList.appendChild(li);
+            });
+        }
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Gỡ bỏ class 'active' khỏi tất cả các nút
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Thêm class 'active' cho nút được click
+                this.classList.add('active');
+                
+                // Lấy tên tab từ thuộc tính data-tab
+                const tabName = this.getAttribute('data-tab');
+                
+                // Hiển thị danh sách trang web tương ứng
+                renderWebsites(tabName);
+            });
+        });
+
+        // Hiển thị danh sách mặc định khi tải trang (ví dụ: tab "Văn bản - Giọng nói")
+        renderWebsites('tts');
+    });
+</script>
+
+</body>
+</html>
