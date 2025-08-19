@@ -1,0 +1,248 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>CHUYỂN VĂN BẢN THÀNH GIỌNG NÓI FREE - TỐT NHẤT THẾ GIỚI</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; padding: 20px; }
+    h2 { text-align: center; }
+    textarea {
+        width: 100%;
+        height: 450px;
+        padding: 10px;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+    }
+    #charCount { margin-top: 5px; font-size: 14px; color: #555; }
+    select, input, button { padding: 8px; margin-top: 10px; font-size: 16px; }
+    #controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+    audio { margin-top: 15px; width: 100%; }
+    #progressContainer { margin-top: 10px; width: 100%; background: #ddd; border-radius: 5px; display: none; }
+    #progressBar { width: 0%; height: 20px; background: #4caf50; text-align: center; color: white; border-radius: 5px; font-size: 14px; }
+    #statusText { margin-top: 5px; font-size: 14px; color: #333; }
+</style>
+</head>
+<body>
+
+<h2>CHUYỂN VĂN BẢN THÀNH GIỌNG NÓI FREE - TỐT NHẤT THẾ GIỚI</h2>
+<h3>Bản quyền của GÀ ĐỒI</h3>
+
+<textarea id="text" placeholder="Nhập văn bản cần đọc..."></textarea>
+<div id="charCount">Số ký tự: 0</div>
+
+<div id="controls">
+    <select id="voice"></select>
+    <label>Tốc độ: <input type="number" id="speed" step="0.1" value="1" min="0.5" max="2"></label>
+    <button id="cleanBtn">Làm sạch văn bản</button>
+    <button id="speakBtn">Đọc</button>
+    <button id="downloadBtn" disabled>Tải MP3</button>
+</div>
+
+<div id="progressContainer">
+    <div id="progressBar">0%</div>
+</div>
+<div id="statusText"></div>
+
+<audio id="audio" controls></audio>
+
+<script>
+const CHAR_LIMIT = 400;
+
+// Danh sách giọng đọc
+const voiceGroups = [
+    {
+        label: "Nam",
+        voices: [
+            {name: "Thanh Tùng (Bắc)", code: "hn-thanhtung"},
+            {name: "Nam Khánh (Bắc) Báo nói", code: "hn-namkhanh"},
+            {name: "Tiến Quân (Bắc)", code: "hn-tienquan"},
+            {name: "Bảo Quốc (Trung)", code: "hue-baoquoc"},
+            {name: "Minh Quân (Miền Nam) Bài giảng", code: "hcm-minhquan"}
+        ]
+    },
+    {
+        label: "Nữ",
+        voices: [
+            {name: "Quỳnh Anh (Bắc)", code: "hn-quynhanh"},
+            {name: "Thảo Chi (Bắc)", code: "hn-thaochi"},
+            {name: "Phương Trang (Bắc) Quảng cáo", code: "hn-phuongtrang"},
+            {name: "Thanh Hà (Bắc)", code: "hn-thanhha"},
+            {name: "Thanh Phương (Bắc) Review phim", code: "hn-thanhphuong"},
+            {name: "Mai Ngọc (Trung)", code: "hue-maingoc"},
+            {name: "Diễm My (Miền Nam) Podcast", code: "hcm-diemmy"},
+            {name: "Phương Ly (Miền Nam)", code: "hcm-phuongly"},
+            {name: "Thùy Dung (Miền Nam) Sách nói", code: "hcm-thuydung"},
+            {name: "Lê Yến (Miền Nam)", code: "hn-leyen"},
+            {name: "Thùy Duyên (Miền Nam)", code: "hcm-thuyduyen"}
+        ]
+    }
+];
+
+// Hàm lọc ký tự đặc biệt (giữ . , ; : - /)
+function cleanText(str) {
+    return str.replace(/[^0-9A-Za-zÀ-ỹà-ỹ\s\.,;:\-\/]/g, '');
+}
+
+// Load dữ liệu cũ
+document.getElementById('text').value = localStorage.getItem('tts_text') || '';
+document.getElementById('speed').value = localStorage.getItem('tts_speed') || 1;
+
+// Đếm ký tự
+const textArea = document.getElementById('text');
+const charCount = document.getElementById('charCount');
+function updateCharCount() {
+    let len = textArea.value.length;
+    charCount.textContent = "Số ký tự: " + len;
+    charCount.style.color = (len > CHAR_LIMIT) ? "red" : "#555";
+}
+textArea.addEventListener('input', updateCharCount);
+updateCharCount();
+
+// Đổ giọng đọc
+const voiceSelect = document.getElementById('voice');
+voiceGroups.forEach(group => {
+    const optGroup = document.createElement('optgroup');
+    optGroup.label = group.label;
+    group.voices.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.code;
+        opt.textContent = v.name;
+        optGroup.appendChild(opt);
+    });
+    voiceSelect.appendChild(optGroup);
+});
+voiceSelect.value = localStorage.getItem('tts_voice') || voiceGroups[0].voices[0].code;
+
+const audioElem = document.getElementById('audio');
+let finalAudioBlob = null;
+
+function updateProgress(percent) {
+    const bar = document.getElementById('progressBar');
+    bar.style.width = percent + "%";
+    bar.textContent = percent + "%";
+}
+
+// Chia văn bản thành đoạn
+function splitText(text) {
+    const parts = [];
+    let remaining = text.trim();
+    while (remaining.length > CHAR_LIMIT) {
+        let sliceIndex = Math.max(
+            remaining.lastIndexOf(".", CHAR_LIMIT),
+            remaining.lastIndexOf("!", CHAR_LIMIT),
+            remaining.lastIndexOf("?", CHAR_LIMIT),
+            remaining.lastIndexOf("…", CHAR_LIMIT),
+            remaining.lastIndexOf(",", CHAR_LIMIT),
+            remaining.lastIndexOf("\n", CHAR_LIMIT)
+        );
+        if (sliceIndex === -1 || sliceIndex < CHAR_LIMIT * 0.6) {
+            sliceIndex = remaining.lastIndexOf(" ", CHAR_LIMIT);
+            if (sliceIndex === -1) sliceIndex = CHAR_LIMIT;
+        }
+        parts.push(remaining.slice(0, sliceIndex + 1).trim());
+        remaining = remaining.slice(sliceIndex + 1).trim();
+    }
+    if (remaining.length > 0) parts.push(remaining);
+    return parts;
+}
+
+// Nút "Làm sạch văn bản"
+document.getElementById('cleanBtn').onclick = () => {
+    let cleaned = cleanText(textArea.value);
+    textArea.value = cleaned;
+    updateCharCount();
+    alert("Văn bản đã được làm sạch!");
+};
+
+// Nút "Đọc"
+document.getElementById('speakBtn').onclick = async () => {
+    let text = cleanText(textArea.value.trim());
+
+    const voice = voiceSelect.value;
+    const speed = parseFloat(document.getElementById('speed').value);
+    if (!text) return alert("Vui lòng nhập văn bản!");
+
+    localStorage.setItem('tts_text', text);
+    localStorage.setItem('tts_voice', voice);
+    localStorage.setItem('tts_speed', speed);
+
+    const parts = splitText(text);
+    const totalParts = parts.length;
+    const audioBuffers = [];
+
+    document.getElementById('progressContainer').style.display = "block";
+    updateProgress(0);
+    document.getElementById('statusText').textContent = `Đang xử lý đoạn 0/${totalParts}`;
+
+    for (let i = 0; i < totalParts; i++) {
+        document.getElementById('statusText').textContent = `Đang xử lý đoạn ${i+1}/${totalParts}`;
+        
+        const res = await fetch("https://viettelai.vn/tts/speech_synthesis", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                speed: speed,
+                voice: voice,
+                text: parts[i],
+                tts_return_option: 3,
+                without_filter: false
+            })
+        });
+
+        if (!res.ok) {
+            alert("Lỗi khi gọi API TTS ở đoạn " + (i+1));
+            return;
+        }
+
+        const arrayBuffer = await res.arrayBuffer();
+        audioBuffers.push(arrayBuffer);
+
+        let percent = Math.round(((i+1) / totalParts) * 100);
+        updateProgress(percent);
+    }
+
+    let combinedBuffer = mergeAudioBuffers(audioBuffers);
+    finalAudioBlob = new Blob([combinedBuffer], { type: 'audio/mpeg' });
+    const audioUrl = URL.createObjectURL(finalAudioBlob);
+    audioElem.src = audioUrl;
+    document.getElementById('downloadBtn').disabled = false;
+
+    document.getElementById('statusText').textContent = "Hoàn tất!";
+    setTimeout(() => {
+        document.getElementById('progressContainer').style.display = "none";
+    }, 500);
+};
+
+// Ghép audio
+function mergeAudioBuffers(buffers) {
+    let totalLength = buffers.reduce((acc, b) => acc + b.byteLength, 0);
+    let tmp = new Uint8Array(totalLength);
+    let offset = 0;
+    for (let b of buffers) {
+        tmp.set(new Uint8Array(b), offset);
+        offset += b.byteLength;
+    }
+    return tmp.buffer;
+}
+
+// Nút tải MP3
+document.getElementById('downloadBtn').onclick = () => {
+    if (!finalAudioBlob) return;
+    const now = new Date();
+    const timestamp = now.getFullYear() + "-" +
+        String(now.getMonth()+1).padStart(2, '0') + "-" +
+        String(now.getDate()).padStart(2, '0') + "_" +
+        String(now.getHours()).padStart(2, '0') + "-" +
+        String(now.getMinutes()).padStart(2, '0') + "-" +
+        String(now.getSeconds()).padStart(2, '0');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(finalAudioBlob);
+    a.download = `tts_${timestamp}.mp3`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+};
+</script>
+
+</body>
+</html>

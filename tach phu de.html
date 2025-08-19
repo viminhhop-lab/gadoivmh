@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Chia nhỏ file SRT</title>
+<style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f8f8f8; }
+    .container { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px #ccc; }
+    h1 { text-align: center; }
+    input, button { margin-top: 10px; padding: 8px; width: 100%; }
+    .result a { display: block; margin: 5px 0; color: blue; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Chia file phụ đề SRT</h1>
+    <div class="links">
+  🔗 <a href="https://downsub.com/" target="_blank">Truy cập DownSub.com</a>
+</div>
+    <label>📂 Chọn file SRT:</label>
+    <input type="file" id="srtFile" accept=".srt">
+
+    <label>🔢 Chia thành số đoạn:</label>
+    <input type="number" id="numParts" placeholder="VD: 3">
+
+    <label>⏱ Hoặc chia mỗi đoạn (phút):</label>
+    <input type="number" id="minutesPerPart" placeholder="VD: 5">
+
+    <button id="splitBtn">✂ Chia phụ đề</button>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+function timeToMs(t) {
+    let [h, m, s] = t.split(":");
+    let [sec, ms] = s.split(",");
+    return (parseInt(h)*3600 + parseInt(m)*60 + parseInt(sec)) * 1000 + parseInt(ms);
+}
+function msToTime(ms) {
+    let h = Math.floor(ms / 3600000);
+    ms %= 3600000;
+    let m = Math.floor(ms / 60000);
+    ms %= 60000;
+    let s = Math.floor(ms / 1000);
+    let ms2 = ms % 1000;
+    return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")},${String(ms2).padStart(3,"0")}`;
+}
+
+document.getElementById("splitBtn").addEventListener("click", () => {
+    let fileInput = document.getElementById("srtFile").files[0];
+    if (!fileInput) return alert("Vui lòng chọn file SRT");
+
+    let numParts = parseInt(document.getElementById("numParts").value);
+    let minutesPerPart = parseFloat(document.getElementById("minutesPerPart").value);
+
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        let content = e.target.result;
+        let blocks = content.split(/\n\s*\n/);
+        
+        // Lấy tổng thời gian
+        let maxEnd = 0;
+        let timeRegex = /(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})/;
+        blocks.forEach(b => {
+            let m = b.match(timeRegex);
+            if (m) {
+                let end = timeToMs(m[2]);
+                if (end > maxEnd) maxEnd = end;
+            }
+        });
+
+        let segments = [];
+        if (numParts && numParts > 0) {
+            let per = Math.floor(maxEnd / numParts);
+            for (let i = 0; i < numParts; i++) {
+                segments.push([i*per, i==numParts-1 ? maxEnd : (i+1)*per]);
+            }
+        } else if (minutesPerPart && minutesPerPart > 0) {
+            let per = Math.floor(minutesPerPart * 60 * 1000);
+            let start = 0;
+            while (start < maxEnd) {
+                let end = Math.min(start + per, maxEnd);
+                segments.push([start, end]);
+                start = end;
+            }
+        } else {
+            return alert("Vui lòng nhập số đoạn hoặc phút mỗi đoạn");
+        }
+
+        let resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "";
+
+        segments.forEach((seg, idx) => {
+            let segBlocks = [];
+            let segStart = seg[0], segEnd = seg[1];
+            let counter = 1;
+
+            blocks.forEach(b => {
+                let m = b.match(timeRegex);
+                if (m) {
+                    let startMs = timeToMs(m[1]);
+                    let endMs = timeToMs(m[2]);
+                    if (endMs < segStart || startMs > segEnd) return;
+                    let adjStart = Math.max(0, startMs - segStart);
+                    let adjEnd = Math.max(0, endMs - segStart);
+                    let lines = b.split("\n");
+                    lines[0] = counter++;
+                    lines[1] = `${msToTime(adjStart)} --> ${msToTime(adjEnd)}`;
+                    segBlocks.push(lines.join("\n"));
+                }
+            });
+
+            let segContent = segBlocks.join("\n\n");
+            let blob = new Blob([segContent], {type: "text/plain"});
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `part${idx+1}.srt`;
+            a.textContent = `📥 Tải phụ đề đoạn ${idx+1}`;
+            resultDiv.appendChild(a);
+        });
+    };
+    reader.readAsText(fileInput, "utf-8");
+});
+</script>
+</body>
+</html>

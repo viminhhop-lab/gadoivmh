@@ -1,0 +1,202 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Hướng Dẫn Tin Tức</title>
+<style>
+    body 
+
+<h2>TIỆN ÍCH SAO CHÉP NHANH</h2>
+          {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+    }
+    #left-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    textarea {
+        width: 100%;
+        height: 200px;
+        padding: 10px;
+        font-size: 14px;
+        resize: none;
+    }
+    .btn-row {
+        display: flex;
+        gap: 5px;
+    }
+    button {
+        padding: 6px 10px;
+        font-size: 14px;
+        cursor: pointer;
+        border: 1px solid black; /* viền đen cho tất cả nút */
+        border-radius: 4px;
+    }
+    #right-panel {
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .item-btn {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .text-btn {
+        flex: 1;
+        background-color: #28a745;
+        color: white;
+    }
+    .text-btn.active {
+        background-color: #007bff;
+    }
+    .rename-btn {
+        background: orange;
+        color: white;
+        padding: 0 6px;
+        margin-left: 3px;
+    }
+    .delete-btn {
+        background: red;
+        color: white;
+        padding: 0 6px;
+        margin-left: 3px;
+    }
+</style>
+</head>
+<body>
+
+<div id="left-panel">
+    <textarea id="mainText" disabled></textarea>
+    <div class="btn-row">
+        <button id="editBtn">SỬA</button>
+        <button id="saveBtn" disabled>LƯU</button>
+        <button id="copyBtn">SAO CHÉP</button>
+    </div>
+</div>
+
+<div id="right-panel">
+    <div id="buttonList"></div>
+    <button id="addBtn">+ Thêm Button</button>
+</div>
+
+<script>
+    const textArea = document.getElementById("mainText");
+    const editBtn = document.getElementById("editBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const addBtn = document.getElementById("addBtn");
+    const buttonList = document.getElementById("buttonList");
+
+    let currentKey = null;
+
+    function loadButtons() {
+        buttonList.innerHTML = "";
+        let buttons = JSON.parse(localStorage.getItem("buttons") || "[]");
+        buttons.forEach((btn) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "item-btn";
+
+            const b = document.createElement("button");
+            b.textContent = btn.name;
+            b.className = "text-btn";
+            if (btn.key === currentKey) b.classList.add("active");
+            b.onclick = () => {
+                currentKey = btn.key;
+                textArea.value = localStorage.getItem(btn.key) || "";
+                textArea.disabled = true;
+                editBtn.disabled = false;
+                saveBtn.disabled = true;
+                loadButtons();
+            };
+
+            const rename = document.createElement("button");
+            rename.textContent = "✏";
+            rename.className = "rename-btn";
+            rename.onclick = () => {
+                let newName = prompt("Nhập tên mới:", btn.name);
+                if (newName) {
+                    btn.name = newName;
+                    localStorage.setItem("buttons", JSON.stringify(buttons));
+                    loadButtons();
+                }
+            };
+
+            const del = document.createElement("button");
+            del.textContent = "🗑";
+            del.className = "delete-btn";
+            del.onclick = () => {
+                if (confirm("Bạn có chắc muốn xóa button này?")) {
+                    buttons = buttons.filter(bi => bi.key !== btn.key);
+                    localStorage.removeItem(btn.key);
+                    localStorage.setItem("buttons", JSON.stringify(buttons));
+                    if (currentKey === btn.key) {
+                        currentKey = null;
+                        textArea.value = "";
+                        editBtn.disabled = true;
+                        saveBtn.disabled = true;
+                    }
+                    loadButtons();
+                }
+            };
+
+            wrapper.appendChild(b);
+            wrapper.appendChild(rename);
+            wrapper.appendChild(del);
+            buttonList.appendChild(wrapper);
+        });
+    }
+
+    function addButton() {
+        let buttons = JSON.parse(localStorage.getItem("buttons") || "[]");
+        let newKey = "text" + (buttons.length + 1);
+        buttons.push({ name: newKey, key: newKey });
+        localStorage.setItem("buttons", JSON.stringify(buttons));
+        localStorage.setItem(newKey, "");
+        loadButtons();
+    }
+
+    editBtn.onclick = () => {
+        if (currentKey) {
+            textArea.disabled = false;
+            saveBtn.disabled = false;
+        }
+    };
+
+    saveBtn.onclick = () => {
+        if (currentKey) {
+            localStorage.setItem(currentKey, textArea.value);
+            textArea.disabled = true;
+            saveBtn.disabled = true;
+        }
+    };
+
+    copyBtn.onclick = () => {
+        if (!currentKey) return;
+        navigator.clipboard.writeText(textArea.value)
+            .then(() => {
+                console.log("Đã sao chép!");
+            })
+            .catch(() => {
+                console.error("Lỗi khi sao chép!");
+            });
+    };
+
+    addBtn.onclick = addButton;
+
+    // Khởi tạo mặc định
+    if (!localStorage.getItem("buttons")) {
+        localStorage.setItem("buttons", JSON.stringify([{ name: "text1", key: "text1" }]));
+        localStorage.setItem("text1", "");
+    }
+    loadButtons();
+</script>
+
+</body>
+</html>

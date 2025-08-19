@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>TRANG TIỆN ÍCH CỦA VI MINH HỢP</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; }
+    header {
+      background: #2d89ef;
+      padding: 10px;
+      color: white;
+    }
+    nav {
+      background: #f4f4f4;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+    nav button {
+      padding: 6px 12px;
+      margin: 2px;
+      border: 1px solid #999;
+      background: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    nav button:hover {
+      background: #2d89ef;
+      color: white;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100vh - 100px); /* Trừ header + nav */
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>TRANG TIỆN ÍCH CỦA VI MINH HỢP 2025</h1>
+</header>
+
+<nav>
+  <button onclick="loadPage('tach phu de.html')">TẢI VÀ CHIA NHỎ PHỤ ĐỀ</button>
+  <button onclick="loadPage('all in one srt .html')">TÁCH+GỘP TIMECODE-THOẠI</button>
+  <button onclick="loadPage('chia nho van ban.html')">DỊCH PHỤ ĐỀ & COPY</button>
+  <button onclick="loadPage('TTS FREE bo dau.html')">VĂN BẢN->GIỌNG NÓI</button>
+  <button onclick="loadPage('sao chép.html')">GHI CHÚ VÀ SAO CHÉP</button>
+  <button onclick="loadPage('https://downsub.com/')">DownSub.com</button>
+  <button onclick="loadPage('tenvideo.html')">VIDEO</button>
+  <button onclick="loadPage('https://colab.research.google.com/drive')">Colab</button>
+</nav>
+
+<iframe id="viewer" src="tenvideo.html"></iframe>
+
+<script>
+function loadPage(page){
+  document.getElementById('viewer').src = page;
+}
+</script>
+
+</body>
+</html>
