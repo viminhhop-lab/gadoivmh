@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lọc Văn Bản Song Ngữ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f0f0f0;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-size: 16px;
+            padding: 10px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .output {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <h2>Lọc phần tiếng Việt từ văn bản song ngữ</h2>
+    <p>Dán văn bản vào ô bên dưới (theo định dạng: <code>Tiếng Trung - Tiếng Việt</code>):</p>
+
+    <textarea id="inputText" placeholder="Dán văn bản tại đây..."></textarea>
+    <br>
+    <!-- Thêm 2 nút mới -->
+    <button onclick="clearInput()">Xóa bảng trên</button>
+    <button onclick="pasteText()">Dán</button>
+
+    <!-- Các nút cũ -->
+    <button onclick="filterVietnamese()">Lọc văn bản</button>
+    <button onclick="copyText()">Sao chép văn bản</button>
+
+    <div class="output" id="outputBox"></div>
+
+    <script>
+        function clearInput() {
+            document.getElementById('inputText').value = "";
+        }
+
+        async function pasteText() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('inputText').value = text;
+            } catch (err) {
+                alert("Trình duyệt không cho phép dán trực tiếp!");
+            }
+        }
+
+        function filterVietnamese() {
+            const input = document.getElementById('inputText').value;
+            const lines = input.trim().split('\n');
+            const vietnameseLines = [];
+
+            for (let line of lines) {
+                let parts = line.split(' - ');
+                if (parts.length >= 2) {
+                    vietnameseLines.push(parts.slice(1).join(' - ').trim());
+                }
+            }
+
+            document.getElementById('outputBox').textContent = vietnameseLines.join('\n');
+        }
+
+        function copyText() {
+            const outputText = document.getElementById('outputBox').textContent;
+            if (outputText) {
+                const textarea = document.createElement('textarea');
+                textarea.value = outputText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert("Đã sao chép văn bản!");
+            } else {
+                alert("Chưa có văn bản để sao chép!");
+            }
+        }
+    </script>
+</body>
+</html>
