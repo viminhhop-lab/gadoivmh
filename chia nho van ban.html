@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -276,6 +276,23 @@
         #fileInput {
             display: none;
         }
+        #extraInput {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+        #extraInput:focus {
+            border-color: #007bff;
+            background-color: #fff;
+            outline: none;
+        }
+
     </style>
 </head>
 <body>
@@ -315,8 +332,11 @@
                     <label for="outputText1">Nội dung đoạn được chọn:</label>
                     <span id="lineCount1" class="line-count"></span>
                 </div>
+                <!-- Thêm ngay dưới #outputText1 -->
                 <div id="outputText1" class="output-box"></div>
+                <input type="text" id="extraInput" placeholder="Nhập thêm nội dung...">
                 <button id="copyBtn" disabled>Sao chép</button>
+
                 <div id="messageBox1" class="message-box"></div>
             </div>
         </div>
@@ -566,20 +586,23 @@
 
     // Hàm sao chép văn bản
     function copyToClipboard() {
-        if (!outputText1Div.textContent) {
-            showMessage("Không có nội dung để sao chép.", messageBox1, 'error');
-            return;
-        }
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(outputText1Div.textContent).then(() => {
-                showMessage('Đã sao chép thành công!', messageBox1);
-            }).catch(err => {
-                console.error('Lỗi khi sao chép:', err);
-                showMessage('Lỗi khi sao chép. Vui lòng thử lại.', messageBox1, 'error');
-            });
-        }
-    }
+    const extraText = document.getElementById('extraInput').value.trim();
+    const mainText = outputText1Div.textContent.trim();
+    const combinedText = extraText ? `${extraText} ${mainText}` : mainText;
 
+    if (!combinedText) {
+        showMessage("Không có nội dung để sao chép.", messageBox1, 'error');
+        return;
+    }
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(combinedText).then(() => {
+            showMessage('Đã sao chép thành công!', messageBox1);
+        }).catch(err => {
+            console.error('Lỗi khi sao chép:', err);
+            showMessage('Lỗi khi sao chép. Vui lòng thử lại.', messageBox1, 'error');
+        });
+    }
+}
     // Hàm dán văn bản
     async function pasteFromClipboard() {
         if (currentChunkIndex2 === -1) {
@@ -812,5 +835,4 @@
     });
 </script>
 </body>
-
 </html>
